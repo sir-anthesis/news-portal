@@ -21,7 +21,7 @@ class NewsFactory extends Factory
             'desc'=>fake()->paragraph(2, true),
             'category'=>fake()->word,
             'author'=>fake()->email,
-            'image' => fake()->imageUrl(200, 100, 'city')
+            'image' => 'https://d1csarkz8obe9u.cloudfront.net/posterpreviews/breaking-news-design-template-70665f891baf9314344e211ce2db6a12_screen.jpg?ts=1689413594'
         ];
     }
 }

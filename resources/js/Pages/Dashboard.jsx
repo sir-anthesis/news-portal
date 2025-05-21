@@ -10,19 +10,21 @@ export default function Dashboard({ auth }) {
     const [image, setImage] = useState("");
 
     const handleSubmit = () => {
-        const data = {
-            title,
-            desc,
-            category,
-            image,
-        };
+        const formData = new FormData();
+        formData.append("title", title);
+        formData.append("desc", desc);
+        formData.append("category", category);
+        formData.append("image", image);
 
-        Inertia.post("/news", data);
-
-        setTitle("");
-        setDesc("");
-        setCategory("");
-        setImage("");
+        Inertia.post("/news", formData, {
+            forceFormData: true,
+            onSuccess: () => {
+                setTitle("");
+                setDesc("");
+                setCategory("");
+                setImage("");
+            },
+        });
     };
 
     useEffect(() => {
@@ -70,6 +72,7 @@ export default function Dashboard({ auth }) {
                                 </div>
                             )}
                             <input
+                                required
                                 type="text"
                                 placeholder="Judul"
                                 className="input input-bordered w-full m-2 bg-white shadow"
@@ -79,6 +82,7 @@ export default function Dashboard({ auth }) {
                                 value={title}
                             />
                             <input
+                                required
                                 type="text"
                                 placeholder="Kategori"
                                 className="input input-bordered w-full m-2 bg-white shadow"
@@ -88,6 +92,7 @@ export default function Dashboard({ auth }) {
                                 value={category}
                             />
                             <input
+                                required
                                 type="text"
                                 placeholder="Deskripsi"
                                 className="input input-bordered w-full m-2 bg-white shadow"
@@ -95,13 +100,11 @@ export default function Dashboard({ auth }) {
                                 value={desc}
                             />
                             <input
-                                type="text"
-                                placeholder="Link Thumbnail"
-                                className="input input-bordered w-full m-2 bg-white shadow"
-                                onChange={(image) =>
-                                    setImage(image.target.value)
-                                }
-                                value={image}
+                                required
+                                type="file"
+                                placeholder="Thumbnail"
+                                className="input-bordered w-full m-2 p-4 bg-white shadow"
+                                onChange={(e) => setImage(e.target.files[0])}
                             />
                             <button
                                 className="btn btn-primary m-2"
@@ -111,55 +114,61 @@ export default function Dashboard({ auth }) {
                             </button>
                         </div>
                     </div>
-                    {auth.myNews &&
-                        auth.myNews.map((news, i) => {
-                            return (
-                                <div
-                                    key={i}
-                                    className="card w-full lg:w-96 bg-white shadow-xl pt-2 my-5"
-                                >
-                                    <figure>
-                                        <img src={news.image} />
-                                    </figure>
-                                    <div className="card-body">
-                                        <h2 className="card-title">
-                                            {news.title}
-                                        </h2>
-                                        <p>{news.desc}</p>
-                                        <div className="card-actions justify-end">
-                                            <div className="badge badge-outline">
-                                                {news.category}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                        {auth.myNews &&
+                            auth.myNews.map((news, i) => {
+                                return (
+                                    <div
+                                        key={i}
+                                        className="card w-full lg:w-96 bg-white shadow-xl pt-2 my-5"
+                                    >
+                                        <figure>
+                                            <img src={news.image} />
+                                        </figure>
+                                        <div className="card-body">
+                                            <h2 className="card-title">
+                                                {news.title}
+                                            </h2>
+                                            <p>{news.desc}</p>
+                                            <div className="card-actions justify-end">
+                                                <div className="badge badge-outline">
+                                                    {news.category}
+                                                </div>
+                                                <div className="badge badge-outline">
+                                                    {news.author}
+                                                </div>
                                             </div>
-                                            <div className="badge badge-outline">
-                                                {news.author}
+                                            <div className="card-actions justify-aroundly">
+                                                <a className="btn btn-primary">
+                                                    <Link
+                                                        href={route(
+                                                            "edit.news"
+                                                        )}
+                                                        method="get"
+                                                        data={{ id: news.id }}
+                                                        as="button"
+                                                    >
+                                                        Edit
+                                                    </Link>
+                                                </a>
+                                                <a className="btn btn-danger">
+                                                    <Link
+                                                        href={route(
+                                                            "delete.news"
+                                                        )}
+                                                        method="post"
+                                                        data={{ id: news.id }}
+                                                        as="button"
+                                                    >
+                                                        Delete
+                                                    </Link>
+                                                </a>
                                             </div>
-                                        </div>
-                                        <div className="card-actions justify-aroundly">
-                                            <a className="btn btn-primary">
-                                                <Link
-                                                    href={route("edit.news")}
-                                                    method="get"
-                                                    data={{ id: news.id }}
-                                                    as="button"
-                                                >
-                                                    Edit
-                                                </Link>
-                                            </a>
-                                            <a className="btn btn-danger">
-                                                <Link
-                                                    href={route("delete.news")}
-                                                    method="post"
-                                                    data={{ id: news.id }}
-                                                    as="button"
-                                                >
-                                                    Delete
-                                                </Link>
-                                            </a>
                                         </div>
                                     </div>
-                                </div>
-                            );
-                        })}
+                                );
+                            })}
+                    </div>
                 </div>
             </div>
         </AuthenticatedLayout>

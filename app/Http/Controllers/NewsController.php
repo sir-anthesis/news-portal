@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Resources\NewsCollection;
 use App\Models\News;
-use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Illuminate\Http\Request;
+use App\Http\Resources\NewsCollection;
+use Illuminate\Support\Facades\Storage;
 
 class NewsController extends Controller
 {
@@ -35,15 +36,27 @@ class NewsController extends Controller
      */
     public function store(Request $request)
     {
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'desc' => 'required|string',
+            'category' => 'required|string|max:255',
+            'image' => 'required|image|mimes:jpg,jpeg,png,webp',
+        ]);
+
+        $path = $request->file('image')->store('public/news');
+        $url = Storage::url($path);
+
         $news = new News();
         $news->title = $request->title;
         $news->desc = $request->desc;
         $news->category = $request->category;
-        $news->image = $request->image;
+        $news->image = $url;
         $news->author = auth()->user()->email;
         $news->save();
+
         return redirect()->back()->with('message', 'Berita berhasil dibuat');
     }
+
 
     /**
      * Display the specified resource.
@@ -75,13 +88,28 @@ class NewsController extends Controller
      */
     public function update(Request $request)
     {
-        News::where('id', $request->id)->update([
-            'title' => $request->title,
-            'desc' => $request->desc,
-            'category' => $request->category,
-            'image' => $request->image
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'desc' => 'required|string',
+            'category' => 'required|string|max:255',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp',
         ]);
-        return redirect()->route('dashboard')->with('message', 'Berita berhasil diupdate');
+
+        $news = News::findOrFail($request->id);
+
+        $news->title = $request->title;
+        $news->desc = $request->desc;
+        $news->category = $request->category;
+
+        if ($request->hasFile('image')) {
+            $path = $request->file('image')->store('public/news');
+            $url = Storage::url($path);
+            $news->image = $url;
+        }
+
+        $news->save();
+
+        return redirect()->route('my.news')->with('message', 'Berita berhasil diupdate');
     }
 
     /**
